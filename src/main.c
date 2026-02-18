@@ -65,7 +65,7 @@ get_c (char *str, FILE *output_fd)
   uint64_t cmin, cmax, m, c, *dividers;
   argument_parser (output_fd, str, 9, &cmin, &cmax, &m, "cmin=", "cmax=",
 		   "m=", 5, 5, 2);
-  if (!is_successful || m <= cmin)
+  if (is_successful != EXIT_SUCCESS || m <= cmin)
     ERROR_AND_RETURN (output_fd);
   if (cmax > m)
     cmax = m - 1;
