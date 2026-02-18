@@ -86,7 +86,7 @@ get_a (char *str, FILE *output_fd)
   uint64_t m, *dividers, i, goal = 1;
   bool found = false;
   argument_parser (output_fd, str, 3, &m, "m=", 2);
-  if (!is_successful)
+  if (is_successful != EXIT_SUCCESS)
     ERROR_AND_RETURN (output_fd);
   dividers = factor (m);
   for (i = 0; i < 64 && dividers[i] != 0; i++)
@@ -114,7 +114,7 @@ lcg (char *str, FILE *output_fd)
   argument_parser (output_fd, str, 15, &coefficient, &value, &free_member,
 		   &modulo, &sequence_length, "a=", "x0=", "c=", "m=", "n=",
 		   2, 3, 2, 2, 2);
-  if (!is_successful)
+  if (is_successful != EXIT_SUCCESS)
     ERROR_AND_RETURN (output_fd);
   if (!is_valid_lcg
       (coefficient, value, free_member, modulo, sequence_length))
