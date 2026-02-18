@@ -6,26 +6,31 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include "utils.h"
 #define ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER 6
-
-char str[10000];
-FILE *input_fd;
-bool is_successful = true;
-uint8_t i;
+#define TEST_FILENAME_LENGTH 100
+#define FREE_AND_NULL(p) do { free(p); (p) = NULL; } while(0)
+#define CLOSE_AND_NULL(f) do { fclose(f); (f) = NULL; } while(0)
+#define ERROR_AND_RETURN(fd) do { error(fd); is_successful = EINVAL; return; } while(0)
+#define NO_SOLUTION_AND_RETURN(fd) do { no_solution(fd); return; } while(0)
+bool is_successful = EXIT_SUCCESS;
 
 void
-argument_parser (uint8_t values_count, ...)
+argument_parser (FILE *output_fd, char *str, uint8_t values_count, ...)
 {
   va_list values;
-  uint64_t *arg_pointer[ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER];
-  memset (arg_pointer, 0,
-	  ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER * sizeof (*arg_pointer));
+  uint64_t *arg_pointer[ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER], i = 0;
+  (void *) memset (arg_pointer, 0,
+		   ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER *
+		   sizeof (*arg_pointer));
   char *identifiers[ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER];
-  memset (identifiers, 0,
-	  ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER * sizeof (*identifiers));
+  (void *) memset (identifiers, 0,
+		   ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER *
+		   sizeof (*identifiers));
   uint16_t identifiers_sizes[ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER];
-  memset (identifiers_sizes, 0,
-	  ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER * sizeof (*identifiers_sizes));
+  (void *) memset (identifiers_sizes, 0,
+		   ARGUMENT_PARSER_MAX_ARGUMENTS_NUMBER *
+		   sizeof (*identifiers_sizes));
   va_start (values, values_count);
   uint8_t sections_border = values_count / 3;
   for (i = 0; i < sections_border; i++)
@@ -42,83 +47,118 @@ argument_parser (uint8_t values_count, ...)
       if ((argument_p = strstr (str, identifiers[i])) == NULL)
 	{
 	  perror ("Required argument not found");
-	  is_successful = false;
-	  return;
+	  ERROR_AND_RETURN (output_fd);
 	}
       if (sscanf (argument_p + identifiers_sizes[i],
 		  "%" SCNu64, arg_pointer[i]) != 1)
 	{
 	  perror ("Failed to parse argument");
-	  is_successful = false;
-	  return;
+	  ERROR_AND_RETURN (output_fd);
 	}
       i++;
     }
 }
 
 void
-get_c ()
+get_c (char *str, FILE *output_fd)
 {
-  uint64_t cmin, cmax, m;
-  argument_parser (9, &cmin, &cmax, &m, "cmin=", "cmax=", "m=", 5, 5, 2);
+  uint64_t cmin, cmax, m, c, *dividers;
+  argument_parser (output_fd, str, 9, &cmin, &cmax, &m, "cmin=", "cmax=",
+		   "m=", 5, 5, 2);
+  if (!is_successful || m <= cmin)
+    ERROR_AND_RETURN (output_fd);
+  if (cmax > m)
+    cmax = m - 1;
+  dividers = factor (m);
+  for (c = cmin; c <= cmax; c++)
+    {
+      if (!is_divisible_by_any (c, dividers))
+	output (output_fd, c);
+    }
+  FREE_AND_NULL (dividers);
+  nl (output_fd);
+}
+
+void
+get_a (char *str, FILE *output_fd)
+{
+  // TODO: test with small m
+  uint64_t m, *dividers, i, goal = 1;
+  bool found = false;
+  argument_parser (output_fd, str, 3, &m, "m=", 2);
   if (!is_successful)
-    return;
+    ERROR_AND_RETURN (output_fd);
+  dividers = factor (m);
+  for (i = 0; i < 64 && dividers[i] != 0; i++)
+    {
+      if (!is_prime (dividers[i]))
+	continue;
+      found = true;
+      goal *= dividers[i];
+    }
+  FREE_AND_NULL (dividers);
+  dividers = NULL;
+  if (found)
+    {
+      output (output_fd, goal);
+      nl (output_fd);
+    }
+  else
+    NO_SOLUTION_AND_RETURN (output_fd);
 }
 
 void
-get_m ()
+lcg (char *str, FILE *output_fd)
 {
-  uint64_t m;
-  argument_parser (3, &m, "m=", 2);
+  uint64_t coefficient, value, free_member, modulo, sequence_length;
+  argument_parser (output_fd, str, 15, &coefficient, &value, &free_member,
+		   &modulo, &sequence_length, "a=", "x0=", "c=", "m=", "n=",
+		   2, 3, 2, 2, 2);
   if (!is_successful)
-    return;
+    ERROR_AND_RETURN (output_fd);
+  if (!is_valid_lcg
+      (coefficient, value, free_member, modulo, sequence_length))
+    NO_SOLUTION_AND_RETURN (output_fd);
+  while (sequence_length-- > 0)
+    output (output_fd, value = (coefficient * value + free_member) % modulo);
+  nl (output_fd);
 }
 
 void
-lcg ()
+test (char *str, FILE *output_fd)
 {
-  uint64_t a, x0, c, m, n;
-  argument_parser (15, &a, &x0, &c, &m, &n, "a=", "x0=", "c=", "m=", "n=", 2,
-		   3, 2, 2, 2);
-  if (!is_successful)
-    return;
-}
-
-void
-test ()
-{
-}
-
-void
-error ()
-{
-  FILE *output_fd = fopen ("output.txt", "a");
-  fputs ("incorrect command", output_fd);
-  fclose (output_fd);
+  printf ("%s\n", str);
+  output (output_fd, 1);
+  // BUG: ALL BROKEN
 }
 
 int
 main ()
 {
-  input_fd = fopen ("input.txt", "r");
-  if (input_fd == NULL)
+  FILE *input_fd, *output_fd;
+  if ((input_fd = fopen ("input.txt", "r")) == NULL)
     {
-      perror ("Unable to open file");
+      perror ("Unable to open input file");
       return ENOENT;
     }
+  if ((output_fd = fopen ("output.txt", "a")) == NULL)
+    {
+      perror ("Unable to open output file");
+      return ENOENT;
+    }
+  char str[10000];
   fgets (str, 10000, input_fd);
+  CLOSE_AND_NULL (input_fd);
   if (strstr (str, "get_c") != NULL)
-    get_c ();
+    get_c (str, output_fd);
   else if (strstr (str, "get_m") != NULL)
-    get_m ();
+    get_a (str, output_fd);
   else if (strstr (str, "lcg") != NULL)
-    lcg ();
+    lcg (str, output_fd);
   else if (strstr (str, "test") != NULL)
-    test ();
+    test (str, output_fd);
   else
-    error ();
-  fclose (input_fd);
-  if (is_successful)
-    return EXIT_SUCCESS;
-  return EXIT_FAILURE;
+    error (output_fd);
+  CLOSE_AND_NULL (output_fd);
+  return is_successful;
 }
