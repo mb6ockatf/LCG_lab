@@ -3,22 +3,6 @@
 #include<stdio.h>
 #include<stdlib.h>
 #define FACTORS_SIZE 64
-uint64_t
-gcd (uint64_t a, uint64_t b)
-{
-  uint64_t temp;
-  if (b > a)
-    temp = a, a = b;
-  b = a;
-  while (b)
-    {
-      temp = b;
-      b = a % b;
-      a = temp;
-    }
-  return a;
-}
-
 uint64_t *
 factor (uint64_t number)
 {

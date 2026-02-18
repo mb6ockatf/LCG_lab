@@ -1,7 +1,5 @@
 #ifndef UTILS_H
 #define UTILS_H
-
-uint64_t gcd (uint64_t a, uint64_t b);
 uint64_t *factor(uint64_t number);
 bool is_divisible_by_any(uint64_t number, uint64_t * factors);
 bool is_prime(uint64_t number);

@@ -1,3 +1,23 @@
+commit 8cd77fec82ef46657d1e2b68b5442a48268aaaa9
+Author: mb6ockatf <smokenmirror@tutamail.com>
+Date:   Wed Feb 18 05:38:27 2026 +0300
+
+    chore: remove unused gcd() function definition
+
+commit 7327d5cfa2683367ede0dc69ae22be80e1ded631
+Author: mb6ockatf <smokenmirror@tutamail.com>
+Date:   Wed Feb 18 05:33:59 2026 +0300
+
+    feat: add get_a, get_c
+    
+    only test left and the report
+
+commit 7e59952db8b76746e585b2324f64ae3a7f30c699
+Author: mb6ockatf <smokenmirror@tutamail.com>
+Date:   Mon Feb 16 01:01:24 2026 +0300
+
+    feat: command parsing & validity check
+
 commit 76aa1488a2bbdff56fc2ba12c7cf419bd5fc609b
 Author: mb6ockatf <smokenmirror@tutamail.com>
 Date:   Sat Feb 14 01:33:29 2026 +0300
