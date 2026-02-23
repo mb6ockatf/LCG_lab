@@ -2,6 +2,7 @@
 #include<inttypes.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include <stdbool.h>
 #define FACTORS_SIZE 64
 uint64_t *
 factor (uint64_t number)
@@ -54,7 +55,7 @@ is_divisible_by_any (uint64_t number, uint64_t *factors)
 void
 error (FILE *output_fd)
 {
-  if (fputs ("incorrect command", output_fd) == EOF)
+  if (fputs ("incorrect command\n", output_fd) == EOF)
     perror ("Failed to report incorrected command message to output");
 }
 
