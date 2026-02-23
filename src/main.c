@@ -86,13 +86,17 @@ get_a (char *str, FILE *output_fd)
   uint64_t m, *dividers, i, goal = 1;
   bool found = false;
   argument_parser (output_fd, str, 3, &m, "m=", 2);
+
+  if (m%4 == 0)
+    goal = 2;
+
   if (is_successful != EXIT_SUCCESS)
     ERROR_AND_RETURN (output_fd);
   dividers = factor (m);
   for (i = 0; i < 64 && dividers[i] != 0; i++)
     {
       if (!is_prime (dividers[i]))
-	continue;
+	        continue;
       found = true;
       goal *= dividers[i];
     }

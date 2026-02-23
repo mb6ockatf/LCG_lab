@@ -1,1 +1,1 @@
-get_c cmin=1 cmax=50 m=6469693230
+get_a m=6400
