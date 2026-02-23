@@ -174,7 +174,7 @@ test (char *str, FILE *output_fd)
   }
 
   // Динамический порог для 5% уровня значимости: df + 2*sqrt(df)
-  // df (степени свободы) = количество корзин - 1
+  // df (степени свободы) = количество корзин - 1   
   float df = (float)max_val - 1.0f;
   float threshold = df + 2.0f * sqrtf(df > 0 ? df : 1.0f); 
 

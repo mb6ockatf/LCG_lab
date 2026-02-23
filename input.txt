@@ -1,1 +1,1 @@
-test inp=abcd.txt
+get_c cmin=1 cmax=50 m=6469693230

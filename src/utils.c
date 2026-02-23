@@ -17,14 +17,17 @@ factor (uint64_t number)
     }
   while (number > 1)
     {
-      if (number % divider != 0)
-	continue;
+      if (number % divider != 0){
+        divider += 2;
+        continue;
+      }
       factors[factors_p] = divider;
       while (number % divider == 0)
 	number /= divider;
       factors_p++;
+
+      divider += 2;
     }
-  divider += 2;
   return factors;
 }
 
