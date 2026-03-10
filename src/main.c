@@ -146,7 +146,6 @@ test (char *str, FILE *output_fd)
 
   nums = malloc(capacity * sizeof(int));
 
-  // Читаем числа, разделённые пробелами, до конца файла
   while (fscanf(test_fd, "%d", &val) == 1) {
     if (size >= capacity) {
       capacity *= 2;
@@ -177,19 +176,19 @@ test (char *str, FILE *output_fd)
       sum += (((float)temp_num - E) * ((float)temp_num - E)) / E;
   }
 
-  // Динамический порог для 5% уровня значимости: df + 2*sqrt(df)
-  // df (степени свободы) = количество корзин - 1   
   float df = (float)max_val - 1.0f;
   float threshold = df + 2.0f * sqrtf(df > 0 ? df : 1.0f); 
 
   if (sum < threshold) {
     fprintf(output_fd, "Распределение случайно. Параметры:\n\
 Значение хи-квадратов: %f\n\
-Кол-во чисел: %d\n", sum, size, max_val);
+Кол-во чисел: %d\n\
+Порог случайности: %f\n", sum, size, max_val, threshold);
   } else {
     fprintf(output_fd, "Распределение НЕ случайно. Параметры:\n\
 Значение хи-квадратов: %f\n\
-Кол-во чисел: %d\n", sum, size, max_val);
+Кол-во чисел: %d\n\
+Порог случайности: %f\n", sum, size, max_val, threshold);
   }
 
   free(nums);

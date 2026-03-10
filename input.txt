@@ -1,1 +1,1 @@
-lcg a=7 x0=1 c=10 m=6400 n=2000
+test inp=abcd.txt
