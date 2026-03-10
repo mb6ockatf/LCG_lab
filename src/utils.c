@@ -2,6 +2,7 @@
 #include<inttypes.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include <stdbool.h>
 #define FACTORS_SIZE 64
 uint64_t *
 factor (uint64_t number)
@@ -16,25 +17,31 @@ factor (uint64_t number)
     }
   while (number > 1)
     {
-      if (number % divider != 0)
-	continue;
+      if (number % divider != 0){
+        divider += 2;
+        continue;
+      }
       factors[factors_p] = divider;
       while (number % divider == 0)
 	number /= divider;
       factors_p++;
+
+      divider += 2;
     }
-  divider += 2;
   return factors;
 }
 
 bool
 is_prime (uint64_t number)
 {
+  if (number < 2) return false;
+  if (number == 2) return true;
+
   uint64_t border = (number >> 1) + 1, divider;
   for (divider = 2; divider <= border; divider++)
     {
       if (number % divider == 0)
-	return false;
+	        return false;
     }
   return true;
 }

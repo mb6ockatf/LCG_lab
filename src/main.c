@@ -92,7 +92,7 @@ get_a (char *str, FILE *output_fd)
   for (i = 0; i < 64 && dividers[i] != 0; i++)
     {
       if (!is_prime (dividers[i]))
-	continue;
+	        continue;
       found = true;
       goal *= dividers[i];
     }
@@ -127,9 +127,67 @@ lcg (char *str, FILE *output_fd)
 void
 test (char *str, FILE *output_fd)
 {
-  printf ("%s\n", str);
-  output (output_fd, 1);
-  // BUG: ALL BROKEN
+  char name_input_file[10000];
+  if (sscanf(str, "test inp=%255s", name_input_file) != 1)
+    ERROR_AND_RETURN (output_fd);
+
+  FILE *test_fd = fopen (name_input_file, "r");
+  if (test_fd == NULL)
+    ERROR_AND_RETURN (output_fd);
+
+  int *nums = NULL;
+  int size = 0;
+  int capacity = 10;
+  int val, max_val = -1e9;
+
+  nums = malloc(capacity * sizeof(int));
+
+  while (fscanf(test_fd, "%d", &val) == 1) {
+    if (size >= capacity) {
+      capacity *= 2;
+      nums = realloc(nums, capacity * sizeof(int));
+    }
+    nums[size++] = val;
+    if (val > max_val) max_val = val;
+  }
+  fclose(test_fd);
+
+  max_val++;
+
+  if (size == 0) {
+    free(nums);
+    ERROR_AND_RETURN (output_fd);
+  }
+
+  float sum = 0;
+  float E = ((float)size) / ((float)max_val);
+
+  for (int i = 0; i < max_val; i++) {
+    int temp_num = 0;
+    for (int j = 0; j < size; j++) {
+      if (i == nums[j])
+        temp_num++;
+    }
+    if (E > 0)
+      sum += (((float)temp_num - E) * ((float)temp_num - E)) / E;
+  }
+
+  float df = (float)max_val - 1.0f;
+  float threshold = df + 2.0f * sqrtf(df > 0 ? df : 1.0f); 
+
+  if (sum < threshold) {
+    fprintf(output_fd, "Распределение случайно. Параметры:\n\
+Значение хи-квадратов: %f\n\
+Кол-во чисел: %d\n\
+Порог случайности: %f\n", sum, size, max_val, threshold);
+  } else {
+    fprintf(output_fd, "Распределение НЕ случайно. Параметры:\n\
+Значение хи-квадратов: %f\n\
+Кол-во чисел: %d\n\
+Порог случайности: %f\n", sum, size, max_val, threshold);
+  }
+
+  free(nums);
 }
 
 int
@@ -151,7 +209,7 @@ main ()
   CLOSE_AND_NULL (input_fd);
   if (strstr (str, "get_c") != NULL)
     get_c (str, output_fd);
-  else if (strstr (str, "get_m") != NULL)
+  else if (strstr (str, "get_a") != NULL)
     get_a (str, output_fd);
   else if (strstr (str, "lcg") != NULL)
     lcg (str, output_fd);
